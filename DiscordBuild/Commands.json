@@ -2,5 +2,5 @@
   "clean": "rm -rf ~/DiscordBuildTmp",
   "clone": "git clone https://github.com/Somefellow/DotaForDiscord.git ~/DiscordBuildTmp",
   "build": "dotnet publish -c release --self-contained --runtime linux-x64 --framework netcoreapp3.1 ~/DiscordBuildTmp/DotaForDiscord/DotaForDiscord.csproj",
-  "release": "echo Not Implemented Yet"
+  "pm2 status": "pm2 status"
 }

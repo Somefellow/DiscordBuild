@@ -3,6 +3,7 @@
 	<appSettings>
 		<add key="AdminUserId" value="" />
 		<add key="CommandPrefix" value="" />
+		<add key="CommandFile" value="Commands.json" />
 		<add key="DiscordChannelId" value="" />
 		<add key="DiscordToken" value="" />
 	</appSettings>

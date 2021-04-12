@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
 using Newtonsoft.Json.Linq;
 
@@ -24,8 +23,6 @@ namespace DiscordBuild
 
         public async Task MainAsync()
         {
-            commands = new List<Command>();
-
             using (client = new DiscordSocketClient())
             {
                 client.Log += LogAsync;
@@ -44,6 +41,37 @@ namespace DiscordBuild
 
         public ISocketMessageChannel Channel => client.GetChannel(ConfigurationService.DiscordChannelId) as ISocketMessageChannel;
 
+        private async Task LoadCommands()
+        {
+            using (Channel.EnterTypingState())
+            {
+                commands = new List<Command>();
+
+                var parsedCommands = JObject.Parse(await File.ReadAllTextAsync("Commands.json")).ToObject<Dictionary<string, string>>();
+
+                RestUserMessage lastMessage = null;
+                string messageText = null;
+
+                foreach (var command in parsedCommands)
+                {
+                    commands.Add(new Command(command.Key, command.Value));
+
+                    if (lastMessage == null)
+                    {
+                        messageText = $"Registered command: {command.Key}";
+                        lastMessage = await Channel.SendMessageAsync(messageText);
+                    }
+                    else
+                    {
+                        messageText += $", {command.Key}";
+                        await lastMessage.ModifyAsync(msg => msg.Content = messageText);
+                    }
+                }
+            }
+
+            await Task.CompletedTask;
+        }
+
         private async Task LogAsync(LogMessage log)
         {
             File.AppendAllLines("DiscordBuild.log", new string[] { log.ToString() });
@@ -51,15 +79,9 @@ namespace DiscordBuild
             await Task.CompletedTask;
         }
 
-
         private async Task ReadyAsync()
         {
-            var parsedCommands = JObject.Parse(await File.ReadAllTextAsync("Commands.json")).ToObject<Dictionary<string, string>>();
-
-            foreach (var command in parsedCommands)
-            {
-                commands.Add(new Command(command.Key, command.Value));
-            }
+            await LoadCommands();
 
             await Channel.SendMessageAsync("DotaBotBuilder ready!");
 
@@ -77,14 +99,20 @@ namespace DiscordBuild
 
             string commandCaller = message.Content.Substring(ConfigurationService.CommandPrefix.Length);
 
-            if (commandCaller == "commands")
+            if (commandCaller.Equals("Commands", StringComparison.InvariantCultureIgnoreCase))
             {
                 await Channel.SendMessageAsync($"Commands: {string.Join(", ", commands.Select(c => c.Caller).OrderBy(c => c))}");
             }
 
+            if (commandCaller.Equals("ReloadCommands", StringComparison.InvariantCultureIgnoreCase))
+            {
+                await LoadCommands();
+                await Channel.SendMessageAsync("Commands reloaded.");
+            }
+
             foreach (var command in commands)
             {
-                if (command.Caller == commandCaller)
+                if (commandCaller.Equals(command.Caller, StringComparison.InvariantCultureIgnoreCase))
                 {
                     await command.Execute(Channel);
                 }
