@@ -88,7 +88,6 @@ namespace DiscordBuild
             await Task.CompletedTask;
         }
 
-
         private async Task MessageReceivedAsync(SocketMessage message)
         {
             if (message.Author.Id != ConfigurationService.AdminUserId)
@@ -108,6 +107,12 @@ namespace DiscordBuild
             {
                 await LoadCommands();
                 await Channel.SendMessageAsync("Commands reloaded.");
+            }
+
+            if (commandCaller.Equals("Kill", StringComparison.InvariantCultureIgnoreCase))
+            {
+                await Channel.SendMessageAsync("Goodbye.");
+                Environment.Exit(0);
             }
 
             foreach (var command in commands)
