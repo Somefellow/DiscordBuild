@@ -68,15 +68,12 @@ namespace DiscordBuild
                     }
                 }
             }
-
-            await Task.CompletedTask;
         }
 
         private async Task LogAsync(LogMessage log)
         {
-            File.AppendAllLines("DiscordBuild.log", new string[] { log.ToString() });
             Console.WriteLine(log.ToString());
-            await Task.CompletedTask;
+            await File.AppendAllLinesAsync("DiscordBuild.log", new string[] { log.ToString() });
         }
 
         private async Task ReadyAsync()
@@ -84,8 +81,6 @@ namespace DiscordBuild
             await LoadCommands();
 
             await Channel.SendMessageAsync("DotaBotBuilder ready!");
-
-            await Task.CompletedTask;
         }
 
         private async Task MessageReceivedAsync(SocketMessage message)

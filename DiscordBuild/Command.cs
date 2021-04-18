@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Discord;
 using Discord.WebSocket;
 
 namespace DiscordBuild
@@ -54,8 +53,6 @@ namespace DiscordBuild
 
                 await channel.SendMessageAsync(message);
             }
-
-            await Task.CompletedTask;
         }
     }
 }
